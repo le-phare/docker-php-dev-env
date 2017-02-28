@@ -1,0 +1,36 @@
+version:  '2'
+
+services:
+    php:
+        build: php
+        networks:
+            - default
+            - database
+            - maildev
+        volumes:
+            - .:/var/www/html
+
+    web:
+        build: apache
+        networks:
+            - default
+            - web
+        volumes_from:
+            - php
+        volumes:
+            - ./logs:/var/log/apache2
+        environment:
+            VIRTUAL_HOST: '${PROJECT_NAME}.${DEV_DOMAIN}'
+            HTTPS_METHOD: ~
+            CERT_NAME: ~
+
+networks:
+    web:
+        external:
+            name: generic_web
+    database:
+        external:
+            name: generic_database
+    maildev:
+        external:
+            name: generic_maildev

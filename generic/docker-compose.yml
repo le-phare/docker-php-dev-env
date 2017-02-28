@@ -1,0 +1,83 @@
+version: '2'
+
+services:
+    proxy:
+        image: jwilder/nginx-proxy
+        volumes:
+            - /var/run/docker.sock:/tmp/docker.sock:ro
+            - ./ssl_certs:/etc/nginx/certs:ro
+        networks:
+            - web
+        ports:
+            - '80:80'
+            - '443:443'
+
+    pgsql_95:
+        image: postgres:9.5
+        networks:
+            - database
+        volumes:
+            - pgsql_95_data:/var/lib/postgres/data
+        environment:
+            PGDATA: /var/lib/postgres/data
+
+    pgsql_96:
+        image: postgres:9.6
+        networks:
+            - database
+        volumes:
+            - pgsql_96_data:/var/lib/postgres/data
+        environment:
+            PGDATA: /var/lib/postgres/data
+
+    mysql_55:
+        image: mysql:5.5
+        networks:
+            - database
+        environment:
+            MYSQL_ROOT_PASSWORD: ~
+        volumes:
+            - mysql_55_data:/var/lib/mysql
+
+    mysql_57:
+        image: mysql:5.7
+        networks:
+            - database
+        environment:
+            MYSQL_ROOT_PASSWORD: ~
+        volumes:
+            - mysql_57_data:/var/lib/mysql
+
+    maildev:
+        image: djfarrelly/maildev
+        networks:
+            - web
+            - maildev
+        environment:
+            VIRTUAL_HOST: maildev.${DEV_DOMAIN}
+
+    adminer:
+        image: dehy/adminer
+        environment:
+            VIRTUAL_HOST: "*.adminer.${DEV_DOMAIN}"
+        networks:
+            - web
+            - database
+
+networks:
+    web:
+        driver: bridge
+    maildev:
+        driver: bridge
+    database:
+        driver: bridge
+
+volumes:
+    mysql_57_data:
+        driver: local
+    mysql_55_data:
+        driver: local
+    pgsql_95_data:
+        driver: local
+    pgsql_96_data:
+        driver: local
